@@ -1,45 +1,43 @@
-# Tuya BLE MCU SDK Arduino Library
+# Tuya Bluetooth Low Energy MCU SDK Arduino Library
 
 [English](./README.md) | [中文](./README_zh.md)
 
-Tuya MCU SDK Arduino Library is developed based on the Tuya BLE general integration solution. The device's MCU is connected to a BLE module through a serial port to implement a network connection. **The development is based on general firmware, which supports the adaptative 9600 and115200 baud rate. Please read this document carefully before development.**
+Tuya Bluetooth Low Energy (LE) MCU SDK Arduino Library is built on top of Tuya's Wi-Fi generic solution that enables your product to connect to the cloud through the serial communication between your MCU and Tuya's network module. The module is flashed with the generic firmware and supports auto-baud detection for 9600 and 115200. Please read this document carefully before development.
 
-+ The following is the schematic diagram of BLE single point communication without gateway.
++ The following diagram shows how the Bluetooth LE module communicates with the cloud without a gateway.
 
 <div align='center'>
-<img src="https://images.tuyacn.com/goat/20200316/6c6aae1d230247688758851d2d473596.png" width="50%"/>
+<img src="https://images.tuyacn.com/smart/docs/BluetoothLE.png" width="50%"/>
 </div>
 
-+ The following is the schematic diagram of BLE single point communication with Bluetooth gateway.
++ The following diagram shows how the Bluetooth LE module communicates with the cloud with a gateway.
 
 <div align='center'>
-<img src="https://images.tuyacn.com/goat/20200316/fe265fd6a3eb4d0e90a227451caec0d8.png" width="40%"/>
+<img src="https://images.tuyacn.com/smart/docs/BluetoothGateway.png" width="50%"/>
 </div>
 
 ## [Tuya Beta Test Program](https://pages.tuya.com/develop/ArduinoBetaTest_discord?_source=f21d8ebfe2cde74110e27b26366a81f3)
-Now welcome to join the [Tuya Beta Test Program](https://pages.tuya.com/develop/ArduinoBetaTest_discord?_source=f21d8ebfe2cde74110e27b26366a81f3) to get your development gifts and make your own arduino projects with Tuya Support. Your feedback is helpful and valuable to the whole community.
+Now welcome to join the [Tuya Beta Test Program](https://pages.tuya.com/develop/ArduinoBetaTest_discord?_source=f21d8ebfe2cde74110e27b26366a81f3) to get your development gifts and make your own Arduino projects with Tuya Support. Your feedback is helpful and valuable to the whole community.
 ![image](https://img-blog.csdnimg.cn/img_convert/e6f96d30bf98706723fe8c0de8653c8c.png)
 
-
-
-## Document introduction
+## File introduction
 
 ```bash
-├── config.h // Configuration file. Add and define features in the MCU SDK with macros.
-├── examples // The folder to save routines.
+├── config.h	 // Configuration file. You can add or configure required features by editing the macro.
+├── examples	 // Some samples help you understand the logic and get started with your project.
 ├── keywords.txt
 ├── library.properties
 ├── README.md
 ├── README_zh.md
-└── src // The folder to save Tuya MCU SDK Arduino Library.
-    ├── TuyaBLE.cpp // The APIs for users.
-    ├── TuyaDataPoint.cpp // The class of DP operations.
+└── src	 // Tuya MCU SDK Arduino Library.
+    ├── TuyaBLE.cpp	 // APIs.
+    ├── TuyaDataPoint.cpp // Classes of data point  (DP) operations.
     ├── TuyaDataPoint.h
-    ├── TuyaDefs.h // Some constants.
+    ├── TuyaDefs.h	 // Some constants.
     ├── TuyaBLE.h
-    ├── TuyaTools.cpp // Tools used by the MCU SDK.
+    ├── TuyaTools.cpp	 // Some tools.
     ├── TuyaTools.h
-    ├── TuyaUart.cpp // Functions for serial communications and data buffer.
+    ├── TuyaUart.cpp	 // Serial data handlers.
     └── TuyaUart.h
 ```
 
@@ -47,13 +45,15 @@ Now welcome to join the [Tuya Beta Test Program](https://pages.tuya.com/develop/
 
 ## Important functions
 
-When you use this library for development with Arduino, you must add the header file `TuyaBLE.h` in your Arduino project.
+When you use this library for development with Arduino, you must add the header file `TuyaBLE.h` in your project.
 
-### 1. Initialization
 
-Every product that is created on the Tuya IoT Platform will have a unique product ID (PID). The PID is associated with all information related to this product, including specific DP, app control panel, and delivery information.
+### Initialization
 
-In `unsigned char TuyaBLE::init(unsigned char *pid, unsigned char *mcu_ver)`, the PID is obtained after you create a product on the [Tuya IoT Platform](http://iot.tuya.com/?_source=bcd157afd1c16c931b7b44381c9fe884). The PID of a BLE product is typically 8 bytes. The `mcu_ver` parameter is the version number of the software. Pay attention to this parameter if you want to support OTA updates of the MCU.
+[Tuya IoT Development Platform](https://iot.tuya.com/) assigns each product a unique product ID (PID). The PID is associated with all information related to this product, including defined DPs, app control panel, and delivery information.
+
+Take `unsigned char TuyaBLE::init(unsigned char *pid, unsigned char *mcu_ver)` as an example. `pid` can be obtained from the [Tuya IoT Development Platform](https://iot.tuya.com/pmg/solution) by creating a product. For Bluetooth products, the PID is an 8-digit alphanumeric code. `mcu_ver` represents the MCU version number that an OTA update relies on.
+
 > **Note**: The current version of the library does not support the OTA feature.
 
 ```c
@@ -61,12 +61,12 @@ In `unsigned char TuyaBLE::init(unsigned char *pid, unsigned char *mcu_ver)`, th
 
 TuyaBLE my_device;
 ...
-void setup() 
+void setup()
 {   
   Serial.begin(9600);
   ...
-  my_device.init("xxxxxxxx", "1.0.0");// "xxxxxxxx": the PID on the Tuya IoT Platform. "1.0.0" is the default value. You can change "1.0.0" to the actual version number of the current software. 
-              
+  my_device.init("xxxxxxxx", "1.0.0");// "xxxxxxxx" is the PID. `1.0.0` should be replaced with the real MCU firmware version number.
+      
   ...
 }
 
@@ -76,83 +76,82 @@ void loop()
   my_device.uart_service();
   ...
 }
+
 ...
 ```
 
+### Pass in DP data to the MCU SDK
 
+When you create a product on the [Tuya IoT Development Platform](https://iot.tuya.com/pmg/solution), you can define the required DPs.
 
-### 2. Pass in the DP information to the MCU SDK
+Each product feature defined on the platform is described as a DP.
 
-Create products on the [Tuya IoT Platform](http://iot.tuya.com/?_source=bcd157afd1c16c931b7b44381c9fe884) and get information on product DP points.
++ Each DP has its data type such as Boolean, enum, and value.
++ A DP has a read/write property. For example, a 2-gang switch has two Boolean DPs, and the valid value of each DP can be either `True` or `False`.
++ The read property means to get the current value of a DP. The write property means to change the current value of a DP.
 
-A data point (DP) represents a smart device function.
+DP ID: represents the ID of a DP event under a communication protocol.
 
-+ Tuya abstracts each function into a data point. DPs are defined in different data types, such as Boolean, enumeration, and integer.
-+ DPs have read and write attributes. For example, a 2-gang switch has two Boolean DPs, and each DP has either a `True` or `False` value, which is readable and writable.
-+ To read means to get the current value of the switch, and to write means to change the current value of the switch.
+`void TuyaBLE::set_dp_cmd_total(unsigned char dp_cmd_array[][2], unsigned char dp_cmd_num)` function is used to pass in the information of your defined DPs to the MCU. 
 
-DPID: specifies the ID of a DP event under a communication protocol.
-
-
-The MCU SDK needs to know which DPs you have created and what type they are. Pass them to the MCU SDK through the `void TuyaBLE::set_dp_cmd_total(unsigned char dp_cmd_array[][2], unsigned char dp_cmd_num)` function. 
-The Tuya IoT Platform has six types of DPs:
+Six data types are available:
 
 ```c
-#define DP_TYPE_RAW     0x00    // Raw type
-#define DP_TYPE_BOOL    0x01    // Boolean type
-#define DP_TYPE_VALUE   0x02    // Numeric type
+#define DP_TYPE_RAW     0x00    // RAW type
+#define DP_TYPE_BOOL    0x01    // Boolean  type
+#define DP_TYPE_VALUE   0x02    // Value type
 #define DP_TYPE_STRING  0x03    // String type
 #define DP_TYPE_ENUM    0x04    // Enum type
 #define DP_TYPE_BITMAP  0x05    // Fault type
 ```
 
-In the `void TuyaBLE::set_dp_cmd_total(unsigned char dp_cmd_array[][2], unsigned char dp_cmd_num)` function, `dp_cmd_array[][2]` is the array that stores DP information, and `dp_cmd_num` is the total number of DPs.
+For `void TuyaBLE::set_dp_cmd_total(unsigned char dp_cmd_array[][2], unsigned char dp_cmd_num)`, `dp_cmd_array[][2]`  indicates the array for information storage and `dp_cmd_num` indicates the total number of DPs.
 
 
 
-Assume that a light has three functions, corresponding to three DPs as below:
-* Switch (DP ID: 1, DP type: Boolean type).
-* Light mode (DP ID: 2, DP type: enum type).
-* Brightness (DP ID: 3, DP type: numeric type).
+Assume that a smart light has three DPs.
 
++ On/off: Its DP ID is 1 and data type is Boolean.
++ Light mode: Its DP ID is 2 and data type is enum.
++ Brightness: Its DP ID is 3 and data type is value.
 
-```c
-#include <TuyaBLE.h>
+    ```c
+    #include <TuyaBLE.h>
 
-TuyaBLE my_device;
-...
-#define DPID_SWITCH_LED 1 // The switch DP of the light.
-#define DPID_WORK_MODE 2 // The working mode DP of the light.
-#define DPID_BRIGHT_VALUE 3 // The brightness DP of the light.
-    
-// Note: array[][0] is DP ID, and array[][1] is DP type.
-unsigned char dp_id_array[][2] = {
-    /*  DPID     |  DP type  */
-    {DPID_SWITCH, DP_TYPE_BOOL},  
-    {DPID_WORK_MODE, DP_TYPE_ENUM},
-    {DPID_BRIGHT_VALUE, DP_TYPE_VALUE},
-};
-...
-void setup() 
-{
+    TuyaBLE my_device;
     ...
-    my_device.set_dp_cmd_total(dp_id_array, 3);	
+    #define DPID_SWITCH_LED 1	 // The DP of on/off control.
+    #define DPID_WORK_MODE 2  // The DP of light mode.
+    #define DPID_BRIGHT_VALUE 3  // The DP of brightness.
+
+    // `array[][0]` is DP ID, and `array[][1]` is DP type.
+    unsigned char dp_id_array[][2] = {
+        /*  DPID     |  DP type  */
+        {DPID_SWITCH_LED, DP_TYPE_BOOL},  
+        {DPID_WORK_MODE, DP_TYPE_ENUM},
+        {DPID_BRIGHT_VALUE, DP_TYPE_VALUE},
+    };
     ...
-}
-```
+    void setup() 
+    {
+        ...
+        my_device.set_dp_cmd_total(dp_id_array, 3);	
+        ...
+    }
+    ```
+
+### DP data processing
+
+The function `unsigned char TuyaBLE::mcu_get_dp_download_data(unsigned char dpid, const unsigned char value[], unsigned short len)` is used to parse the DP data received from the cloud. It only supports three data types, `DP_TYPE_BOOL`, `DP_TYPE_VALUE`, and `DP_TYPE_ENUM`. `DP_TYPE_BITMAP` is the fault type, which is for reporting only. The handler for `DP_TYPE_RAW` and `DP_TYPE_STRING` needs to be implemented by you.
 
 
-### 3. Send and process DP data
-
-After the cloud sends data, the sent data must be parsed through the `unsigned char TuyaBLE::mcu_get_dp_download_data(unsigned char dpid, const unsigned char value[], unsigned short len)` function. 
-Currently, this function only supports three types: `DP_TYPE_BOOL`, `DP_TYPE_VALUE`, and `DP_TYPE_ENUM`. `DP_TYPE_BITMAP` refers to the data of fault type, in which the data is only reported to the cloud. You do not need to handle this type. `DP_TYPE_RAW` and `DP_TYPE_STRING` must be implemented yourself.
 
 ```c
 /**
- * @description: The MCU gets Boolean, numeric, and enum types to send DP value. (The data of the raw and string types shall be handled at the user's discretion. The data of the fault type can only be reported.)
- * @param {unsigned char} dpid: Data point (DP) ID
- * @param {const unsigned char} value: DP data buffer address
- * @param {unsigned short} len: Data length
+ * @description: mcu gets bool,value,enum type to send dp value. (raw, string type needs to be handled at the user's discretion. fault only report)
+ * @param {unsigned char} dpid : data point ID 
+ * @param {const unsigned char} value : dp data buffer address 
+ * @param {unsigned short} len : data length
  * @return {unsigned char} Parsed data
  */
 unsigned char TuyaBLE::mcu_get_dp_download_data(unsigned char dpid, const unsigned char value[], unsigned short len);
@@ -160,17 +159,18 @@ unsigned char TuyaBLE::mcu_get_dp_download_data(unsigned char dpid, const unsign
 
 
 
-### 4. Register a function to process DP sending
+### Register DP data handler
 
-The app sends DP control commands to the device through the cloud. After data parsing, the device executes the specified actions accordingly.
+The cloud sends the control command received from the mobile app to the device. Through data parsing, the device executes the command accordingly.
 
-A callback function is required to process the sent commands, so a processing function must be registered. We can call `void TuyaBLE::dp_process_func_register(tuya_callback_dp_download _func)` int the `TuyaBLE.cpp` file to register the callback function.
+You need a callback to handle the received DP data. Call `void TuyaBLE::dp_process_func_register(tuya_callback_dp_download _func)` to register the callback.
 
 ```c
 #include <TuyaBLE.h>
 
 TuyaBLE my_device;
 ...
+
 void setup() 
 {
     ...
@@ -179,8 +179,7 @@ void setup()
     ...
 }
 ```
-
-Then we can use processing function in the `xxx.ion` file.
+You can use the handler in the `xxx.ino` file.
 ```c
 /**
  * @description: DP download callback function.
@@ -194,14 +193,14 @@ unsigned char dp_process(unsigned char dpid,const unsigned char value[], unsigne
   switch(dpid) {
     case DPID_SWITCH_LED:
       led_state = my_device.mcu_get_dp_download_data(dpid, value, length);
-      if (led_state ) {
-        // Turn on 
+      if (led_state) {
+        //Turn on
 
       } else {
-        // Turn off
+        //Turn off
 
       }
-      // Status changes must be reported.
+      //Status changes should be reported.
       my_device.mcu_dp_update(dpid, value, length);
     break;
 
@@ -212,30 +211,30 @@ unsigned char dp_process(unsigned char dpid,const unsigned char value[], unsigne
 ```
 
 
+### Report device status
 
-### 5. Report device status
-
-Reporting the device status is to report the values of all DPs. It is also implemented through function registration.
+The device reports the current status of all DPs. You need to register functions to implement status reporting.
 
 Six data types of DPs are defined as follows:
 
-DP reporting function:
+Report DP status:
 
 ```c
 /**
- * @description: DP data upload
+ * @description: dp data upload
  * @param {unsigned char} dpid
  * @param {const unsigned char} value
- * @param {unsigned short} length
+ * @param {unsigned short} len
  * @return {*}
  */
-unsigned char mcu_dp_update(unsigned char dpid, const unsigned char value[], unsigned short len);//update raw, string type
+unsigned char mcu_dp_update(unsigned char dpid, const unsigned char value[], unsigned short len);// Update raw and string type
 unsigned char mcu_dp_update(unsigned char dpid, unsigned long value, unsigned short len);
 unsigned char mcu_dp_update(unsigned char dpid, unsigned int value, unsigned short len);
 ```
 
 
-Example of registering a device status reporting function
+
+Example:
 
 ```c
 #include <TuyaBLE.h>
@@ -263,15 +262,14 @@ void setup()
  */
 void dp_update_all(void)
 {
-  my_device.mcu_dp_update(DPID_SWITCH_LED, led_state , 1);
+  my_device.mcu_dp_update(DPID_SWITCH_LED , led_state, 1);
 }
 ```
 
-## Technical Support
+## Technical support
 
-You can get support for Tuya by using the following methods:
+You can get support from Tuya with the following methods:
 
-- Developer Centre: https://developer.tuya.com?_source=d3b1d41903c59173453028c00b26eda6
-- Help Centre: https://support.tuya.com/en/help?_source=9e55ab864ce95b016070141319a5206f
-- Technical Support Work Order Centre: https://service.console.tuya.com?_source=5817a709f62789fbeb91c94062bf8993 
-
++ [Tuya Developer Platform](https://developer.tuya.com/en/)
++ [Help Center](https://support.tuya.com/en/help)
++ [Service & Support](https://service.console.tuya.com)
